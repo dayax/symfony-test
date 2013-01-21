@@ -136,7 +136,13 @@ abstract class WebTestCase extends BaseTestCase
             $this->assertEquals(strtolower($expected), strtolower($class));
         }
     }
-    
+
+    /**
+     * Get response header by key
+     *
+     * @param  string   $header
+     * @return mixed    Header content
+     */
     protected function getResponseHeader($header)
     {
         $headers = $this->response->headers;
@@ -144,7 +150,11 @@ abstract class WebTestCase extends BaseTestCase
         return $responseHeader;        
     }
 
-
+    /**
+     * Assert response header exists
+     *
+     * @param  string $header
+     */
     public function assertHasResponseHeader($header)
     {
         $this->validateWebTypeAssert();
@@ -158,6 +168,11 @@ abstract class WebTestCase extends BaseTestCase
         $this->assertNotEquals(false, $responseHeader);
     }
     
+    /**
+     * Assert response header does not exist
+     *
+     * @param  string $header
+     */
     public function assertNotHasResponseHeader($header)
     {
         $this->validateWebTypeAssert();
@@ -172,6 +187,12 @@ abstract class WebTestCase extends BaseTestCase
         $this->assertFalse($responseHeader);
     }
     
+    /**
+     * Assert response header exists and contains the given string
+     *
+     * @param  string $header
+     * @param  string $match
+     */
     public function assertResponseHeaderContains($header,$match)
     {
         $responseHeader = $this->getResponseHeader($header);
@@ -191,6 +212,12 @@ abstract class WebTestCase extends BaseTestCase
         $this->assertEquals($match, $responseHeader);
     }
     
+    /**
+     * Assert response header exists and DOES NOT CONTAIN the given string
+     *
+     * @param  string $header
+     * @param  string $match
+     */
     public function assertNotResponseHeaderContains($header, $match)
     {
         $responseHeader = $this->getResponseHeader($header);
@@ -207,6 +234,12 @@ abstract class WebTestCase extends BaseTestCase
         $this->assertNotEquals($match, $responseHeader);
     }  
     
+    /**
+     * Assert response header exists and matches the given pattern
+     *
+     * @param  string $header
+     * @param  string $pattern
+     */    
     public function assertResponseHeaderRegex($header,$pattern)       
     {
         $responseHeader = $this->getResponseHeader($header);
@@ -225,6 +258,12 @@ abstract class WebTestCase extends BaseTestCase
         $this->assertTrue((boolean) preg_match($pattern,$responseHeader));
     }
     
+    /**
+     * Assert response header does not exist and/or does not match the given regex
+     *
+     * @param  string $header
+     * @param  string $pattern
+     */
     public function assertNotResponseHeaderRegex($header,$pattern)
     {
         $responseHeader = $this->getResponseHeader($header);
@@ -241,6 +280,9 @@ abstract class WebTestCase extends BaseTestCase
         $this->assertFalse((boolean) preg_match($pattern, $responseHeader));
     }
     
+    /**
+     * Assert that response is a redirect
+     */
     public function assertRedirect()
     {
         $responseHeader = $this->getResponseHeader('Location');
@@ -252,6 +294,11 @@ abstract class WebTestCase extends BaseTestCase
         $this->assertNotEquals(false, $responseHeader);
     }
 
+    /**
+     * Assert that response is NOT a redirect
+     *
+     * @param  string $message
+     */
     public function assertNotRedirect()
     {
         $responseHeader = $this->getResponseHeader('Location');
@@ -263,6 +310,11 @@ abstract class WebTestCase extends BaseTestCase
         $this->assertFalse($responseHeader);
     }
     
+    /**
+     * Assert that response redirects to given URL
+     *
+     * @param  string $url
+     */
     public function assertRedirectTo($url)
     {
         $responseHeader = $this->getResponseHeader('Location');
@@ -279,6 +331,12 @@ abstract class WebTestCase extends BaseTestCase
         $this->assertEquals($url, $responseHeader);
     }
 
+    /**
+     * Assert that response does not redirect to given URL
+     *
+     * @param  string $url
+     * @param  string $message
+     */
     public function assertNotRedirectTo($url)
     {
         $responseHeader = $this->getResponseHeader('Location');
