@@ -180,15 +180,31 @@ abstract class WebTestCase extends BaseTestCase
                 $header
             ));
         }
-        if(false===strpos($responseHeader,$match)){
+        if($match!=$responseHeader){
             throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
                 'Failed asserting that response header for "%s" contains "%s". Actual content is "%s"',
                 $header,$match,$responseHeader
             ));
         }
         
-        $this->assertContains($match, $responseHeader);
+        $this->assertEquals($match, $responseHeader);
     }
+    
+    public function assertNotResponseHeaderContains($header, $match)
+    {
+        $responseHeader = $this->getResponseHeader($header);
+        if(!$responseHeader){
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response header, header "%s" do not exists', $header
+            ));
+        }
+        if($match == $responseHeader){
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response header "%s" does not contain "%s"', $header, $match
+            ));
+        }
+        $this->assertNotEquals($match, $responseHeader);
+    }  
     
     public function assertResponseHeaderRegex($header,$pattern)       
     {
@@ -206,6 +222,22 @@ abstract class WebTestCase extends BaseTestCase
             ));
         }
         $this->assertTrue((boolean) preg_match($pattern,$responseHeader));
+    }
+    
+    public function assertNotResponseHeaderRegex($header,$pattern)
+    {
+        $responseHeader = $this->getResponseHeader($header);
+        if(!$responseHeader){
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response header, header "%s" do not exists', $header
+            ));
+        }
+        if(preg_match($pattern, $responseHeader)){
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response header "%s" does not match regex "%s"', $header, $pattern
+            ));
+        }
+        $this->assertFalse((boolean) preg_match($pattern, $responseHeader));
     }
 
 }

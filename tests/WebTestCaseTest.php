@@ -117,20 +117,32 @@ class WebTestCaseTest extends WebTestCase
     
     public function testAssertResponseHeaderContains()
     {
-        $this->open('/');
-        $this->assertResponseHeaderContains('Content-Type','text/html');
-        $this->assertResponseHeaderContains('Content-Type','charset=UTF-8');
+        $this->open('/');        
+        $this->assertResponseHeaderContains('Content-Type','text/html; charset=UTF-8');
         $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException',
             'Failed asserting that response header for "Content-Type" contains "text/json". Actual content is "text/html; charset=UTF-8"'
         );
         
         $this->assertResponseHeaderContains('Content-Type', 'text/json');
     }
+    
+    public function testAssertNotResponseHeaderContains()
+    {
+        $this->open('/');
+        $this->assertNotResponseHeaderContains('Content-Type', 'text/json');
+        $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException',
+            'Failed asserting response header "Content-Type" does not contain "text/html; charset=UTF-8"'
+        );
+        
+        $this->assertNotResponseHeaderContains('Content-Type', 'text/html; charset=UTF-8');
+    }
           
     public function testAssertResponseHeaderRegex()
     {
         $this->open('/');
         $this->assertResponseHeaderRegex('Content-Type','#charset#');
+        $this->assertResponseHeaderRegex('Content-Type','#text#');
+        $this->assertResponseHeaderRegex('Content-Type','#html#');
         
         $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException',
             'actual content is "text/html; charset=UTF-8"'
@@ -138,11 +150,23 @@ class WebTestCaseTest extends WebTestCase
         $this->assertResponseHeaderRegex('Content-Type','#json#');
     }
     
+    public function testAssertNotResponseHeaderRegex()
+    {
+        $this->open('/');
+        $this->assertNotResponseHeaderRegex('Content-Type','#json#');
+        
+        $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException',
+            'Failed asserting response header "Content-Type" does not match regex "#html#'
+        );
+        $this->assertNotResponseHeaderRegex('Content-Type','#html#');
+    }
+    
+    
     /**
      * @dataProvider getTestShouldThrowException
      * @expectedException \PHPUnit_Framework_ExpectationFailedException     
      */
-    public function testShouldThrowWhenHeaderNotExist($method, $header)
+    public function testShouldThrowWhenResponseHeaderNotExist($method, $header)
     {
         $this->open('/');
         $this->$method($header, null, null);
@@ -152,7 +176,9 @@ class WebTestCaseTest extends WebTestCase
     {
         return array(
             array('assertResponseHeaderContains', 'foo-bar'),
+            array('assertNOtResponseHeaderContains','foo-bar'),
             array('assertResponseHeaderRegex', 'foo-bar'),
+            array('assertNotResponseHeaderRegex', 'foo-bar'),
         );
     }
 
