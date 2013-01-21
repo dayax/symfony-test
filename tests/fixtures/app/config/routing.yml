@@ -1,0 +1,3 @@
+demo:
+    pattern: /
+    defaults: { _controller: "DemoBundle:Default:Index" }

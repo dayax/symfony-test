@@ -1,0 +1,11 @@
+{% extends "DemoBundle::layout.html.twig" %}
+{% form_theme form 'BootstrapBundle:Form:horizontal.html.twig' %}
+{% block content %}
+
+<form class="form-horizontal">
+    {{ form_rest(form) }}
+    <div class="form-actions">
+        <input type="submit"/>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,17 @@
+{
+    "name": "dayax/symfony-test",
+    "description": "Description of project symfony-test.",
+    "authors": [
+        {
+            "name": "Anthonius Munthi",
+            "email": "me@itstoni.com"
+        }
+    ],
+    "require": {
+        "symfony/symfony": "2.1.x"
+    },
+    "autoload": {
+        "psr-0": {"dayax\\symfony\\test":"" }       
+    },
+    "target-dir": "dayax/symfony/test"
+}
