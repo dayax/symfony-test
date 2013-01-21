@@ -12,6 +12,7 @@
 namespace dayax\symfony\test;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase as BaseTestCase;
+use \PHPUnit_Framework_ExpectationFailedException;
 
 abstract class WebTestCase extends BaseTestCase
 {
@@ -235,6 +236,104 @@ abstract class WebTestCase extends BaseTestCase
         if(preg_match($pattern, $responseHeader)){
             throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
                 'Failed asserting response header "%s" does not match regex "%s"', $header, $pattern
+            ));
+        }
+        $this->assertFalse((boolean) preg_match($pattern, $responseHeader));
+    }
+    
+    public function assertRedirect()
+    {
+        $responseHeader = $this->getResponseHeader('Location');
+        if(false===$responseHeader){
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response is a redirect'
+            ));
+        }
+        $this->assertNotEquals(false, $responseHeader);
+    }
+
+    public function assertNotRedirect()
+    {
+        $responseHeader = $this->getResponseHeader('Location');
+        if(false !== $responseHeader){
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response is a redirect, actual redirection is "%s"', $responseHeader
+            ));
+        }
+        $this->assertFalse($responseHeader);
+    }
+    
+    public function assertRedirectTo($url)
+    {
+        $responseHeader = $this->getResponseHeader('Location');
+        if(!$responseHeader){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response is a redirect'
+            ));
+        }
+        if($url != $responseHeader){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response redirects to "%s", actual redirection is "%s"', $url, $responseHeader
+            ));
+        }
+        $this->assertEquals($url, $responseHeader);
+    }
+
+    public function assertNotRedirectTo($url)
+    {
+        $responseHeader = $this->getResponseHeader('Location');
+        if(!$responseHeader){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response is a redirect'
+            ));
+        }
+        if($url == $responseHeader){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response redirects to "%s"', $url
+            ));
+        }
+        $this->assertNotEquals($url, $responseHeader);
+    }
+    
+    /**
+     * Assert that redirect location matches pattern
+     *
+     * @param  string $pattern
+     */
+    public function assertRedirectRegex($pattern)
+    {
+        $responseHeader = $this->getResponseHeader('Location');
+        if(!$responseHeader){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response is a redirect'
+            ));
+        }
+        if(!preg_match($pattern, $responseHeader)){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response redirects to URL MATCHING "%s", actual redirection is "%s"',
+                $pattern,
+                $responseHeader
+            ));
+        }
+        $this->assertTrue((boolean) preg_match($pattern, $responseHeader));
+    }
+
+    /**
+     * Assert that redirect location does not match pattern
+     *
+     * @param  string $pattern
+     */
+    public function assertNotRedirectRegex($pattern)
+    {
+        $responseHeader = $this->getResponseHeader('Location');
+        if(!$responseHeader){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response is a redirect'
+            ));
+        }
+        if(preg_match($pattern, $responseHeader)){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response DOES NOT redirect to URL MATCHING "%s"', $pattern
             ));
         }
         $this->assertFalse((boolean) preg_match($pattern, $responseHeader));

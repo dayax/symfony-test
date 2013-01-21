@@ -19,20 +19,8 @@ class DefaultController extends Controller
         return $this->render('DemoBundle:Default:index.html.twig');
     }
     
-    /**
-     * @Route("/form/horizontal-layout")
-     * @Template("DemoBundle:Default:horizontal-layout.html.twig")
-     */
-    public function formHorizontalLayoutAction()
+    public function redirectAction()
     {
-        return array(
-            'form'=>$this->getForm()->createView()
-        );
-    }
-    
-    public function getForm()
-    {
-        
-        return $this->createForm(new FormType());
+        return $this->redirect('http://www.example.com');
     }
 }

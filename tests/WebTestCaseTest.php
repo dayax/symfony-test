@@ -182,4 +182,84 @@ class WebTestCaseTest extends WebTestCase
         );
     }
 
+    public function testAssertRedirect()
+    {
+        $this->open('/redirect');
+        $this->assertRedirect();
+        
+        $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException',
+            'actual redirection is "http://www.example.com'
+        );
+        
+        $this->assertNotRedirect();
+    }
+    
+    public function testAssertNotRedirect()
+    {
+        $this->open('/');
+        $this->assertNotRedirect();
+
+        $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException');
+        $this->assertRedirect();
+    }
+    
+    public function testAssertRedirectTo()
+    {
+        $this->open('/redirect');
+        $this->assertRedirectTo('http://www.example.com');
+        
+        $this->setExpectedException(
+            'PHPUnit_Framework_ExpectationFailedException', 'actual redirection is "http://www.example.com"' // check actual redirection is display
+        );
+        $this->assertRedirectTo('http://www.symfony.com');
+    }
+
+    public function testAssertNotRedirectTo()
+    {
+        $this->open('/redirect');
+        $this->assertNotRedirectTo('http://www.symfony.com');
+
+        $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException');
+        $this->assertNotRedirectTo('http://www.example.com');
+    }        
+    
+    public function testAssertRedirectRegex()
+    {
+        $this->open('/redirect');
+        $this->assertRedirectRegex('#example\.com$#');
+
+        $this->setExpectedException(
+            'PHPUnit_Framework_ExpectationFailedException', 'actual redirection is "http://www.example.com"' // check actual redirection is display
+        );
+        $this->assertRedirectRegex('#example\.id$#');
+    }
+
+    public function testAssertNotRedirectRegex()
+    {
+        $this->open('/redirect');
+        $this->assertNotRedirectRegex('#example\.id#');
+
+        $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException');
+        $this->assertNotRedirectRegex('#example\.com$#');
+    }
+    
+    /**
+     * @dataProvider getTestShouldThrowWhenNotRedirect
+     * @expectedException \PHPUnit_Framework_ExpectationFailedException
+     */
+    public function testShouldThrowWhenNotRedirect($method)
+    {
+        $this->open('/');
+        $this->$method('http://foo.com');
+    }
+    
+    public function getTestShouldThrowWhenNotRedirect()
+    {
+        return array(
+            array('assertRedirectTo'),
+            array('assertNotRedirectTo'),
+            array('assertRedirectRegex'),
+            array('assertNotRedirectRegex'),
+        );
+    }
 }
