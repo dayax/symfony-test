@@ -82,7 +82,7 @@ abstract class WebTestCase extends BaseTestCase
         $trace = debug_backtrace();
         $function = $trace[1]['function'];
         if(false===$this->isOpen){
-            throw new \LogicException('You have to open url first before run "'.$function.'" method.');
+            throw new \LogicException('You have to call open first before run "'.$function.'" method.');
         }
     }
 
@@ -202,7 +202,7 @@ abstract class WebTestCase extends BaseTestCase
      * @param  string $header
      */
     public function assertNotHasResponseHeader($header)
-    {
+    {        
         $this->validateWebTypeAssert();
         $responseHeader = $this->getResponseHeader($header);
         
@@ -223,6 +223,7 @@ abstract class WebTestCase extends BaseTestCase
      */
     public function assertResponseHeaderContains($header,$match)
     {
+        $this->validateWebTypeAssert();
         $responseHeader = $this->getResponseHeader($header);
         if(!$responseHeader){
             throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
@@ -248,6 +249,7 @@ abstract class WebTestCase extends BaseTestCase
      */
     public function assertNotResponseHeaderContains($header, $match)
     {
+        $this->validateWebTypeAssert();
         $responseHeader = $this->getResponseHeader($header);
         if(!$responseHeader){
             throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
@@ -270,6 +272,7 @@ abstract class WebTestCase extends BaseTestCase
      */    
     public function assertResponseHeaderRegex($header,$pattern)       
     {
+        $this->validateWebTypeAssert();
         $responseHeader = $this->getResponseHeader($header);
         if(!$responseHeader){
             throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
@@ -294,6 +297,7 @@ abstract class WebTestCase extends BaseTestCase
      */
     public function assertNotResponseHeaderRegex($header,$pattern)
     {
+        $this->validateWebTypeAssert();
         $responseHeader = $this->getResponseHeader($header);
         if(!$responseHeader){
             throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
@@ -313,6 +317,7 @@ abstract class WebTestCase extends BaseTestCase
      */
     public function assertRedirect()
     {
+        $this->validateWebTypeAssert();
         $responseHeader = $this->getResponseHeader('Location');
         if(false===$responseHeader){
             throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
@@ -329,6 +334,7 @@ abstract class WebTestCase extends BaseTestCase
      */
     public function assertNotRedirect()
     {
+        $this->validateWebTypeAssert();
         $responseHeader = $this->getResponseHeader('Location');
         if(false !== $responseHeader){
             throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
@@ -345,6 +351,7 @@ abstract class WebTestCase extends BaseTestCase
      */
     public function assertRedirectTo($url)
     {
+        $this->validateWebTypeAssert();
         $responseHeader = $this->getResponseHeader('Location');
         if(!$responseHeader){
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
@@ -367,6 +374,7 @@ abstract class WebTestCase extends BaseTestCase
      */
     public function assertNotRedirectTo($url)
     {
+        $this->validateWebTypeAssert();
         $responseHeader = $this->getResponseHeader('Location');
         if(!$responseHeader){
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
@@ -388,6 +396,7 @@ abstract class WebTestCase extends BaseTestCase
      */
     public function assertRedirectRegex($pattern)
     {
+        $this->validateWebTypeAssert();
         $responseHeader = $this->getResponseHeader('Location');
         if(!$responseHeader){
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
@@ -411,6 +420,7 @@ abstract class WebTestCase extends BaseTestCase
      */
     public function assertNotRedirectRegex($pattern)
     {
+        $this->validateWebTypeAssert();
         $responseHeader = $this->getResponseHeader('Location');
         if(!$responseHeader){
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
@@ -432,6 +442,7 @@ abstract class WebTestCase extends BaseTestCase
      */
     protected function filter($selector)
     {
+        $this->validateWebTypeAssert();
         $crawler = $this->crawler;
         $method = 'filter';
         if(substr($selector, 0,1)==='/'){
@@ -498,11 +509,32 @@ abstract class WebTestCase extends BaseTestCase
     public function assertNotElementCount($selector,$expectedCount)
     {
         $this->validateWebTypeAssert();
-        
+        $actual = $this->filter($selector)->count();
+        if($expectedCount===$actual){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting node DENOTED BY "%s" DOES NOT OCCUR EXACTLY "%d" times',
+                $selector, $expectedCount
+            ));
+        }
+        $this->assertNotEquals($expectedCount, $actual);
     }
     
-    public function assertElementContentContains($selector,$content)
+    public function assertElementContains($selector,$match)
     {
+        $this->validateWebTypeAssert();
         
+        $result = $this->filter($selector);
+        if($result->count()===0){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                    'Failed asserting node DENOTED BY "%s" EXISTS', $selector
+            ));
+        }
+        
+        if($result->text()!=$match){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                    'Failed asserting node denoted by "%s" CONTAINS content "%s", actual content is "%s"', $selector, $match, $result->text()
+            ));
+        }
+        $this->assertContains($match,$result->text());
     }    
 }

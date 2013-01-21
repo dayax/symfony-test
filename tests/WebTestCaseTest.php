@@ -22,6 +22,51 @@ class WebTestCaseTest extends WebTestCase
     }
     
     /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage You have to open url first before run "assertHasElement" method.    
+     * @dataProvider getAssertMethod
+     */
+    public function testShouldCallOpenBeforeAssert($method,$parameters)
+    {                        
+        $this->setExpectedException('LogicException',
+            'You have to call open first before run "'.$method.'" method'
+        );
+        
+        call_user_func_array(array($this,$method), $parameters);
+    }
+    
+    public function getAssertMethod()
+    {
+        $r = new \ReflectionClass($this);
+        $returns = array();
+        foreach($r->getMethods() as $method){
+            $class = $method->class;
+            $name = $method->name;
+            if($class!=='dayax\\symfony\\test\\WebTestCase' || strpos($name, 'assert')===false){
+                continue;
+            }
+            $paramCount = count($method->getParameters());
+            $parameters=array();
+            if($paramCount>0){
+                for($i=0;$i<$paramCount;$i++){
+                    $parameters[]=null;
+                }
+            }
+            $data = array(
+                $name,$parameters                
+            );
+            $returns[] = $data;
+        }
+        return $returns;
+    }
+    
+    private function getMethod(\ReflectionMethod $method)
+    {
+        echo $method->class."\n";
+        
+    }
+    
+    /**
      * @expectedException PHPUnit_Framework_ExpectationFailedException
      * @expectedExceptionMessage actual status code is "200"
      */
@@ -80,17 +125,7 @@ class WebTestCaseTest extends WebTestCase
         $this->assertAction('index');
         
         $this->assertAction('FooAction');
-    }
-    
-    
-    /**
-     * @expectedException \LogicException
-     * @expectedExceptionMessage You have to open url first before run "assertHasElement" method.
-     */
-    public function testValidateWebTypeAssert()
-    {                
-        $this->assertHasElement('foo');
-    }
+    }            
     
     /**
      * @covers \dayax\symfony\test\WebTestCase::assertHasResponseHeader
@@ -263,6 +298,14 @@ class WebTestCaseTest extends WebTestCase
         );
     }
     
+    public function testFilter()
+    {
+        $this->open('/');
+        
+        $this->assertEquals(1,$this->filter('h1')->count());
+        $this->assertEquals(1,$this->filter('//h1')->count());
+    }
+    
     /**
      * @expectedException PHPUnit_Framework_ExpectationFailedException
      * @expectedExceptionMessage Failed asserting that element with ".non-existent-css-class" selector is exist.
@@ -293,5 +336,35 @@ class WebTestCaseTest extends WebTestCase
             'Failed asserting that current response contain "h1" element, with "200" count. Actual element count is "1"'
         );
         $this->assertElementCount('h1', 200);        
+    }
+    
+    public function testAssertNotElementCount()
+    {
+        $this->open('/');
+        $this->assertNotElementCount('foo', 1);
+        $this->assertNotElementCount('h1', 2);
+
+        $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException',
+            'Failed asserting node DENOTED BY "h1" DOES NOT OCCUR EXACTLY "1" times'
+        );
+        $this->assertNotElementCount('h1', 1);
+    }
+    
+    public function testAssertElementContains()
+    {
+        $this->open('/');
+        $this->assertElementContains('h1', 'Header h1');
+        $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException');
+        $this->assertElementContains('h1', 'header foo');
+    }
+    
+    /**
+     * @expectedException \PHPUnit_Framework_ExpectationFailedException
+     * @expectedExceptionMessage Failed asserting node DENOTED BY "foo" EXISTS
+     */
+    public function testShouldThrowWhenAssertedElementContainsNotExist()
+    {
+        $this->open('/');
+        $this->assertElementContains('foo', 'bar');
     }
 }
