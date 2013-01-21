@@ -10,8 +10,9 @@ matrix:
   allow_failures:
     - php: 5.5
 
-before_script:
-    - composer --dev install
+before_install:
+    - composer selfupdate
+    - composer install --dev
     
 script:
     - phpunit --coverage-text
