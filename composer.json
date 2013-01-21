@@ -7,11 +7,17 @@
             "email": "me@itstoni.com"
         }
     ],
+    "license": "MIT",
     "require": {
         "symfony/symfony": "2.1.x"
     },
     "autoload": {
         "psr-0": {"dayax\\symfony\\test":"" }       
     },
-    "target-dir": "dayax/symfony/test"
+    "target-dir": "dayax/symfony/test",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
 }
