@@ -44,6 +44,16 @@ abstract class WebTestCase extends BaseTestCase
         $this->isOpen = false;
     }
 
+    /**
+     * Open an URI
+     * @param string    $uri
+     * @param string    $method
+     * @param array     $parameters
+     * @param array     $files
+     * @param array     $server
+     * @param mixed     $content
+     * @param mixed     $changeHistory
+     */
     public function open($uri, $method = "GET", array $parameters = array(), array $files = array(), array $server = array(), $content = null, $changeHistory = true)
     {
         $this->crawler = $this->client->request($method, $uri, $parameters, $files, $server, $content, $changeHistory);
@@ -52,6 +62,10 @@ abstract class WebTestCase extends BaseTestCase
         $this->isOpen = true;
     }
     
+    /**
+     * Return a controller attributes for current request
+     * @return array
+     */
     private function getControllerAttributes()
     {
         $attribute = $this->client->getRequest()->attributes->get('_controller');
@@ -59,6 +73,10 @@ abstract class WebTestCase extends BaseTestCase
         return array($exp[0], $exp[1]);
     }
     
+    /**
+     * Check if open method is already called
+     * @throws \LogicException
+     */
     public function validateWebTypeAssert()
     {        
         $trace = debug_backtrace();
@@ -68,6 +86,11 @@ abstract class WebTestCase extends BaseTestCase
         }
     }
 
+    /**
+     * Assert response status code
+     *
+     * @param  int $code
+     */
     public function assertResponseStatus($code)
     {
         $this->validateWebTypeAssert();
@@ -79,17 +102,22 @@ abstract class WebTestCase extends BaseTestCase
         }
         $this->assertEquals($code, $actual);
     }
-
-    public function assertHasElement($selector)
-    {
+    
+    /**
+     * Assert not response status
+     *
+     * @param  int $code
+     */
+    public function assertNotResponseStatus($code)
+    {   
         $this->validateWebTypeAssert();
-        $actual = $this->crawler->filter($selector)->count();
-        if($actual <= 0){
-            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
-                'Failed asserting that element with "%s" selector is exist.', $selector
+        $match = $this->response->getStatusCode();
+        if($code == $match){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response code was NOT "%s"', $code
             ));
         }
-        $this->assertTrue($actual > 0);
+        $this->assertNotEquals($code, $match);
     }
 
     public function assertAction($expected)
@@ -397,4 +425,84 @@ abstract class WebTestCase extends BaseTestCase
         $this->assertFalse((boolean) preg_match($pattern, $responseHeader));
     }
 
+    /**
+     * Get content with given selector
+     * @param   string $selector
+     * @return \Symfony\Component\DomCrawler\Crawler
+     */
+    protected function filter($selector)
+    {
+        $crawler = $this->crawler;
+        $method = 'filter';
+        if(substr($selector, 0,1)==='/'){
+            $method = 'filterXPath';
+        }
+        
+        return $crawler->$method($selector);
+    }
+    
+    /**
+     * Assert that response content contains an element determined by $selector
+     * @param   string $selector
+     * @throws \PHPUnit_Framework_ExpectationFailedException
+     */
+    public function assertHasElement($selector)
+    {
+        $this->validateWebTypeAssert();
+        $actual = $this->filter($selector)->count();
+        if($actual <= 0){
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting that element with "%s" selector is exist.', $selector
+            ));
+        }
+        $this->assertTrue($actual > 0);
+    }
+    
+    /**
+     * Assert that response content DOES NOT CONTAIN an element determined by $selector
+     * @param   string $selector
+     * @throws \PHPUnit_Framework_ExpectationFailedException
+     */
+    public function assertNotHasElement($selector)
+    {
+        $this->validateWebTypeAssert();
+        $actual = $this->filter($selector)->count();
+        if($actual !== 0){
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting that element with "%s" selector is exist.', $selector
+            ));
+        }
+        $this->assertEquals(0,$actual);
+    }
+    
+   
+    /**
+     * Assert against DOM selection; should contain exact number of nodes
+     *
+     * @param  string $selector         CSS/XPath selector path
+     * @param  string $expectedCount    Number of nodes that should match
+     */
+    public function assertElementCount($selector,$expectedCount)
+    {
+        $this->validateWebTypeAssert();
+        $actual = $this->filter($selector)->count();
+        if($expectedCount!=$actual){
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting that current response contain "%s" element, with "%s" count. Actual element count is "%s"'
+                , $selector,$expectedCount,$actual
+            ));
+        }
+        $this->assertEquals($expectedCount,$actual);
+    }
+    
+    public function assertNotElementCount($selector,$expectedCount)
+    {
+        $this->validateWebTypeAssert();
+        
+    }
+    
+    public function assertElementContentContains($selector,$content)
+    {
+        
+    }    
 }

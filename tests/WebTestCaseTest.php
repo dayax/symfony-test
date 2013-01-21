@@ -35,6 +35,18 @@ class WebTestCaseTest extends WebTestCase
     
     /**
      * @expectedException PHPUnit_Framework_ExpectationFailedException
+     * @expectedExceptionMessage was NOT "200"
+     */
+    public function testAssertNotResponseStatus()
+    {
+        $this->open('/');
+        $this->assertNotResponseStatus(500);
+
+        $this->assertNotResponseStatus(200);
+    }
+    
+    /**
+     * @expectedException PHPUnit_Framework_ExpectationFailedException
      * @expectedExceptionMessage Failed asserting that controller is "FooController", actual controller is "DefaultController"
      */
     public function testAssertController()
@@ -70,18 +82,6 @@ class WebTestCaseTest extends WebTestCase
         $this->assertAction('FooAction');
     }
     
-    /**
-     * @expectedException PHPUnit_Framework_ExpectationFailedException
-     * @expectedExceptionMessage Failed asserting that element with ".non-existent-css-class" selector is exist.
-     */
-    public function testAssertHasElement()
-    {
-        $this->open('/');
-        $this->assertHasElement('h1');
-        $this->assertHasElement('h2');
-        
-        $this->assertHasElement('.non-existent-css-class');
-    }
     
     /**
      * @expectedException \LogicException
@@ -261,5 +261,37 @@ class WebTestCaseTest extends WebTestCase
             array('assertRedirectRegex'),
             array('assertNotRedirectRegex'),
         );
+    }
+    
+    /**
+     * @expectedException PHPUnit_Framework_ExpectationFailedException
+     * @expectedExceptionMessage Failed asserting that element with ".non-existent-css-class" selector is exist.
+     */
+    public function testAssertHasElement()
+    {
+        $this->open('/');
+        $this->assertHasElement('h1');
+        $this->assertHasElement('h2');
+
+        $this->assertHasElement('.non-existent-css-class');
+    }
+    
+    public function testAssertNotHasElement()
+    {
+        $this->open('/');
+        $this->assertNotHasElement('h1.foo');
+        $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException');
+        $this->assertNotHasElement('h1');
+    }
+    
+    public function testAssertElementCount()
+    {
+        $this->open('/');
+        $this->assertElementCount('h1', 1);
+                
+        $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException',
+            'Failed asserting that current response contain "h1" element, with "200" count. Actual element count is "1"'
+        );
+        $this->assertElementCount('h1', 200);        
     }
 }
