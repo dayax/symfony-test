@@ -530,11 +530,79 @@ abstract class WebTestCase extends BaseTestCase
             ));
         }
         
-        if($result->text()!=$match){
+        if(false===strpos($result->text(),$match)){
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
                     'Failed asserting node denoted by "%s" CONTAINS content "%s", actual content is "%s"', $selector, $match, $result->text()
             ));
         }
         $this->assertContains($match,$result->text());
-    }    
+    }
+    
+    public function assertNotElementContains($selector,$match)
+    {
+        $this->validateWebTypeAssert();
+        $result = $this->filter($selector);
+        if($result->count()==0){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting node DENOTED BY "%s" EXISTS', $selector
+            ));
+        }
+        if(false!==strpos($result->text(),$match)){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting node DENOTED BY %s DOES NOT CONTAIN content "%s"',
+                $selector,$match
+            ));
+        }
+        $this->assertContains($selector, $result->text());
+    }        
+
+    /**
+     * Assert against DOM selection; node should match content
+     *
+     * @param  string $path CSS selector path
+     * @param  string $pattern Pattern that should be contained in matched nodes
+     */
+    public function assertElementContentRegex($path, $pattern)
+    {
+        $this->validateWebTypeAssert();
+        $result = $this->filter($path);
+        if($result->count() == 0){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                    'Failed asserting node DENOTED BY "%s" EXISTS', $path
+            ));
+        }
+        if(!preg_match($pattern, $result->text())){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting node denoted by "%s" CONTAINS content MATCHING "%s", actual content is "%s"',
+                $path, $pattern, $result->text()
+            ));
+        }
+        $this->assertTrue((boolean) preg_match($pattern, $result->text()));
+    }
+    
+    /**
+     * Assert against DOM selection; node should NOT match content
+     *
+     * @param  string $path CSS selector path
+     * @param  string $pattern pattern that should NOT be contained in matched nodes
+     */
+    public function assertNotElementContentRegex($selector, $pattern)
+    {
+        $this->validateWebTypeAssert();
+        
+        $result = $this->filter($selector);
+        if($result->count() == 0){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                    'Failed asserting node DENOTED BY "%s" EXISTS', $selector
+            ));
+        }
+        if(preg_match($pattern, $result->text())){
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting node DENOTED BY "%s" DOES NOT CONTAIN content MATCHING "%s", actual content is "%s"',
+                $selector, $pattern,$result->text()
+            ));
+        }
+        $this->assertFalse((boolean) preg_match($pattern, $result->text()));
+    }
+
 }

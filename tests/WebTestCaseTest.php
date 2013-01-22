@@ -362,9 +362,72 @@ class WebTestCaseTest extends WebTestCase
      * @expectedException \PHPUnit_Framework_ExpectationFailedException
      * @expectedExceptionMessage Failed asserting node DENOTED BY "foo" EXISTS
      */
-    public function testShouldThrowWhenAssertedElementContainsNotExist()
+    public function testShouldThrowOnAssertElementContainsWhenElementNotExist()
     {
         $this->open('/');
         $this->assertElementContains('foo', 'bar');
+    }
+    
+    
+    public function testAssertNotElementContains()
+    {
+        $this->open('/');
+        $this->assertNotElementContains('h1', 'header 2');
+        $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException');
+        $this->assertNotElementContains('h1', 'Header h1');
+    }
+    
+    /**
+     * @expectedException \PHPUnit_Framework_ExpectationFailedException
+     * @expectedExceptionMessage Failed asserting node DENOTED BY "foo" EXISTS
+     */
+    public function testShouldThrowOnAssertNotElementContainsWhenElementNotExist()
+    {
+        $this->open('/');
+        $this->assertNotElementContains('foo', 'bar');
+    }
+    
+    public function testAssertElementContentRegex()
+    {
+        $this->open('/');
+        $this->assertElementContentRegex('h1', '#Header#');
+        
+        $this->setExpectedException(
+            'PHPUnit_Framework_ExpectationFailedException',
+            'actual content is "Header h1"'
+        );
+        $this->assertElementContentRegex('h1', '#foo#');
+    }
+    
+    /**
+     * @expectedException \PHPUnit_Framework_ExpectationFailedException
+     * @expectedExceptionMessage Failed asserting node DENOTED BY "foo" EXISTS
+     */
+    public function testShouldThrowOnAssertElementContentRegexWhenElementNotExist()
+    {
+        $this->open('/');
+        $this->assertElementContentRegex('foo', 'bar');
+    }
+    
+    public function testAssertNotElementContentRegex()
+    {
+        $this->open('/');
+        $this->assertNotElementContentRegex('h1', '#foo#');
+
+        $this->setExpectedException(
+            'PHPUnit_Framework_ExpectationFailedException',
+            'DOES NOT CONTAIN content MATCHING "#Header#"'
+        );
+        $this->assertNotElementContentRegex('h1', '#Header#');
+    }
+    
+    /**
+     * @expectedException \PHPUnit_Framework_ExpectationFailedException
+     * @expectedExceptionMessage Failed asserting node DENOTED BY "foo" EXISTS
+     */
+    public function testShouldThrowOnAssertNotElementContentRegexWhenElementNotExist()
+    {
+        $this->open('/');
+        $this->assertNotElementContentRegex('foo', 'bar');
     }
 }
