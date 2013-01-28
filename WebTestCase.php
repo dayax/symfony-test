@@ -605,4 +605,12 @@ abstract class WebTestCase extends BaseTestCase
         $this->assertFalse((boolean) preg_match($pattern, $result->text()));
     }
 
+    /**
+     * @return \Doctrine\ORM\EntityManager
+     */
+    public function getEntityManager()
+    {
+        $em = static::$kernel->getContainer()->get('doctrine')->getManager();
+        return $em;
+    }
 }
