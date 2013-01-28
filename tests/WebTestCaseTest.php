@@ -430,4 +430,12 @@ class WebTestCaseTest extends WebTestCase
         $this->open('/');
         $this->assertNotElementContentRegex('foo', 'bar');
     }
+    
+    /**
+     * @expectedException \LogicException
+     */
+    public function testShouldThrowWhenDoctrineServiceNotExists()
+    {
+        $this->getEntityManager();
+    }
 }
