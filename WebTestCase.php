@@ -605,4 +605,16 @@ abstract class WebTestCase extends BaseTestCase
         $this->assertFalse((boolean) preg_match($pattern, $result->text()));
     }
 
+    /**
+     * @return \Doctrine\ORM\EntityManager
+     */
+    public function getEntityManager()
+    {
+        $c = static::$kernel->getContainer();
+        if(!$c->has('doctrine')){
+            throw new \LogicException('Can not get Entity Manager, be sure that you have Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle() registered in AppKernel::registerBundles().');
+        }
+        $em = static::$kernel->getContainer()->get('doctrine')->getManager();//@codeCoverageIgnore
+        return $em;//@codeCoverageIgnore
+    }
 }
