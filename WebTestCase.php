@@ -60,6 +60,12 @@ abstract class WebTestCase extends BaseTestCase
         $this->request = $this->client->getRequest();
         $this->response = $this->client->getResponse();
         $this->isOpen = true;
+        
+        if($this->response->getStatusCode()>=500){
+            $message = $this->crawler->filter('.text-exception h1')->text();
+            $message = trim($message);
+            throw new \Exception($message);
+        }
     }
     
     /**
@@ -109,7 +115,7 @@ abstract class WebTestCase extends BaseTestCase
      * @param  int $code
      */
     public function assertNotResponseStatus($code)
-    {   
+    {           
         $this->validateWebTypeAssert();
         $match = $this->response->getStatusCode();
         if($code == $match){
@@ -122,6 +128,9 @@ abstract class WebTestCase extends BaseTestCase
 
     public function assertAction($expected)
     {
+        if(false===strpos($expected, 'Action')){
+            $expected = $expected."Action";
+        }
         $this->validateWebTypeAssert();
         $attributes = $this->getControllerAttributes();
         $actual = $attributes[1];
@@ -142,6 +151,9 @@ abstract class WebTestCase extends BaseTestCase
 
     public function assertController($expected)
     {
+        if(false===strpos($expected, 'Controller')){
+            $expected = $expected."Controller";
+        }
         $this->validateWebTypeAssert();
         $attributes = $this->getControllerAttributes();
         $namespaced = $attributes[0];
@@ -616,5 +628,68 @@ abstract class WebTestCase extends BaseTestCase
         }
         $em = static::$kernel->getContainer()->get('doctrine')->getManager();//@codeCoverageIgnore
         return $em;//@codeCoverageIgnore
+    }
+    
+    public function logIn($username="admin",$password="admin")
+    {
+        $this->client = static::createClient(array(), array(
+                'PHP_AUTH_USER' => $username,
+                'PHP_AUTH_PW' => $password,
+        ));        
+    }
+    
+    /**
+     * 
+     * @return \Symfony\Component\DomCrawler\Form A form Instance
+     */
+    public function getForm($selector)
+    {
+        $this->validateWebTypeAssert();
+        
+        $form =null;
+        try{
+            $c = $this->crawler->filter($selector);
+            return $this->crawler->selectButton($selector)->form();
+        }catch(\Exception $e){            
+        }
+        
+        $c = $this->crawler->filter($selector);
+        if($c->count()>=1){
+            return $c->form();
+        }
+        
+        $c = $this->crawler->filter('form[name="'.$selector.'"]');
+        if($c->count()>=1){
+            return $c->form();
+        }
+        throw new \Exception('Can not find form with "'.$selector.'"');
+        return $form;
+    }
+    
+    public function submitForm(Form $form,$method="POST")
+    {
+        $this->crawler = $this->client->request($method, $form->getUri(),$form->getPhpValues());
+    }
+    
+    public function refreshClient()
+    {
+        $this->client = static::createClient();
+        $this->isOpen = false;        
+    }
+    
+    public function removeEntity($entityName,$col,$key)
+    {
+        $em = $this->getEntityManager();
+        
+        $data = $em->getRepository($entityName)->findBy(array(
+            $col=>$key,
+        ));
+        
+        foreach($data as $entity){
+            if(is_object($entity)){
+                $em->remove($entity);
+                $em->flush();
+            }
+        }
     }
 }

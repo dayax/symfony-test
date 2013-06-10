@@ -19,7 +19,7 @@ class WebTestCaseTest extends WebTestCase
     {
         require_once __DIR__.'/fixtures/app/AppKernel.php';
         return "dayax\\symfony\\test\\tests\\fixtures\\app\\AppKernel";
-    }
+    }    
     
     /**
      * @expectedException \LogicException
@@ -100,6 +100,8 @@ class WebTestCaseTest extends WebTestCase
         $this->assertController('DefaultController');
         $this->assertController('Demo\\Controller\\DefaultController');
         $this->assertController('FooController');
+        $this->assertController('Foo');
+        $this->assertController('foo');
     }
     
     /**
@@ -125,6 +127,9 @@ class WebTestCaseTest extends WebTestCase
         $this->assertAction('index');
         
         $this->assertAction('FooAction');
+        $this->assertAction('fooAction');
+        $this->assertAction('Foo');
+        $this->assertAction('foo');
     }            
     
     /**
@@ -437,5 +442,48 @@ class WebTestCaseTest extends WebTestCase
     public function testShouldThrowWhenDoctrineServiceNotExists()
     {
         $this->getEntityManager();
+    }
+    
+    /**
+     * @expectedException \Exception
+     */
+    public function testShouldThrowExceptionOnErrorPage()
+    {
+        $this->open('/error_page');
+    }
+    
+    public function testShouldGetFormByButton()
+    {
+        $this->open('/');
+        $form = $this->getForm('Save');
+        $this->assertInstanceOf('Symfony\Component\DomCrawler\Form', $form);
+    }
+    
+    public function testShouldGetFormByXPath()
+    {
+        $this->open('/');
+        
+        $form = $this->getForm('#form_id');
+        $this->assertInstanceOf('Symfony\Component\DomCrawler\Form', $form);
+               
+        $form = $this->getForm('form_name');
+        $this->assertInstanceOf('Symfony\Component\DomCrawler\Form', $form);
+    }
+    
+    public function testCanGetEntityManager()
+    {
+        $this->markTestIncomplete();
+        $ob = $this->getEntityManager();
+        $this->assertInstanceOf('Doctrine\ORM\EntityManager', $ob);
+    }
+    
+    public function testShouldLogin()
+    {
+        $this->markTestIncomplete();
+    }
+    
+    public function testShouldRemoveEntity()
+    {
+        $this->markTestIncomplete();
     }
 }

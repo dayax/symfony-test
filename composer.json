@@ -17,8 +17,8 @@
     "target-dir": "dayax/symfony/test",
     "extra": {
         "branch-alias": {
-            "dev-develop": "1.1-dev",
-            "dev-master": "1.0-dev"
+            "dev-develop": "2.4-dev",
+            "dev-master": "2.3-dev"
         }
     }
 }

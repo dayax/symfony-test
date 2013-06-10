@@ -5,3 +5,7 @@ homepage:
 redirect:
     pattern: /redirect
     defaults: { _controller: "DemoBundle:Default:Redirect" }
+    
+error_page:
+    pattern: /error_page
+    defaults: { _controller: "DemoBundle:Default:Error" }

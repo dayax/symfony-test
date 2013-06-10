@@ -19,6 +19,15 @@ class DefaultController extends Controller
         return $this->render('DemoBundle:Default:index.html.twig');
     }
     
+    /**
+     * @Route("/error_page")
+     * @Template()
+     */
+    public function errorAction()
+    {
+        throw new \Exception("Hello World");
+    }
+    
     public function redirectAction()
     {
         return $this->redirect('http://www.example.com');
