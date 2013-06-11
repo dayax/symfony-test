@@ -61,9 +61,14 @@ abstract class WebTestCase extends BaseTestCase
         $this->response = $this->client->getResponse();
         $this->isOpen = true;
         
+        $c = $this->crawler->filter('.block-exception');
+        if($c->count()>=1)
         if($this->response->getStatusCode()>=500){
             $message = $this->crawler->filter('.text-exception h1')->text();
             $message = trim($message);
+            $message .= $this->crawler->filter('.block h2')->each(function($node,$i){
+                return $node->text();
+            });
             throw new \Exception($message);
         }
     }
