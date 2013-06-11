@@ -13,6 +13,7 @@ namespace dayax\symfony\test;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase as BaseTestCase;
 use \PHPUnit_Framework_ExpectationFailedException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 abstract class WebTestCase extends BaseTestCase
 {
@@ -61,7 +62,7 @@ abstract class WebTestCase extends BaseTestCase
         $this->response = $this->client->getResponse();
         $this->isOpen = true;
         
-        $c = $this->crawler->filter('.block-exception');
+        /*$c = $this->crawler->filter('.block-exception');
         if($c->count()>=1)
         if($this->response->getStatusCode()>=500){
             $message = $this->crawler->filter('.text-exception h1')->text();
@@ -70,7 +71,7 @@ abstract class WebTestCase extends BaseTestCase
                 return $node->text();
             });
             throw new \Exception($message);
-        }
+        }*/
     }
     
     /**
@@ -696,5 +697,12 @@ abstract class WebTestCase extends BaseTestCase
                 $em->flush();
             }
         }
+    }
+    
+    public function generateUrl($name,array $parameters=array(),$referenceType=false)
+    {
+        //$router = new \Symfony\Component\Routing\Generator\UrlGenerator;  
+        $router = $this->client->getKernel()->getContainer()->get('router');
+        return $router->generate($name,$parameters,$referenceType);
     }
 }

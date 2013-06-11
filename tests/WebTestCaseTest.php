@@ -443,15 +443,7 @@ class WebTestCaseTest extends WebTestCase
     {
         $this->getEntityManager();
     }
-    
-    /**
-     * @expectedException \Exception
-     */
-    public function testShouldThrowExceptionOnErrorPage()
-    {
-        $this->open('/error_page');
-    }
-    
+           
     public function testShouldGetFormByButton()
     {
         $this->open('/');
@@ -485,5 +477,15 @@ class WebTestCaseTest extends WebTestCase
     public function testShouldRemoveEntity()
     {
         $this->markTestIncomplete();
+    }
+    
+    public function testCanGenerateUrl()
+    {
+        $url = $this->generateUrl('homepage');
+        
+        $this->assertEquals('/', $url);
+        
+        $url = $this->generateUrl("redirect");
+        $this->assertEquals('/redirect',$url);
     }
 }
