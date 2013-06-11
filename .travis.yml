@@ -11,6 +11,7 @@ matrix:
     - php: 5.4
 
 before_install:
+    - COMPOSER_ROOT_VERSION=dev-master composer selfupdate
     - COMPOSER_ROOT_VERSION=dev-master composer --prefer-source --dev install
     
 script:
