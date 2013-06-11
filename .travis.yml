@@ -10,7 +10,7 @@ matrix:
 
 before_install:
     - composer selfupdate
-    - composer install --dev
+    - composer update --dev --verbose
     
 script:
     - phpunit --coverage-text
