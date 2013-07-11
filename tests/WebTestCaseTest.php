@@ -62,8 +62,7 @@ class WebTestCaseTest extends WebTestCase
     
     private function getMethod(\ReflectionMethod $method)
     {
-        echo $method->class."\n";
-        
+        //echo $method->class."\n";        
     }
     
     /**
@@ -73,8 +72,7 @@ class WebTestCaseTest extends WebTestCase
     public function testAssertResponseStatus()
     {
         $this->open('/');
-        $this->assertResponseStatus(200);
-        
+        $this->assertResponseStatus(200);        
         $this->assertResponseStatus(500);
     }
     
@@ -462,9 +460,11 @@ class WebTestCaseTest extends WebTestCase
         $this->assertInstanceOf('Symfony\Component\DomCrawler\Form', $form);
     }
     
+    /**
+     * @expectedException \LogicException
+     */
     public function testCanGetEntityManager()
-    {
-        $this->markTestIncomplete();
+    {                
         $ob = $this->getEntityManager();
         $this->assertInstanceOf('Doctrine\ORM\EntityManager', $ob);
     }

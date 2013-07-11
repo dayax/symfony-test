@@ -4,12 +4,13 @@
     "authors": [
         {
             "name": "Anthonius Munthi",
-            "email": "me@itstoni.com"
+            "email": "me@itstoni.com",
+            "homepage": "http://itstoni.com"
         }
     ],
     "license": "MIT",
     "require": {
-        "symfony/symfony": "2.3.*"
+        "symfony/symfony": "2.*"
     },
     "autoload": {
         "psr-0": {"dayax\\symfony\\test":"" }       

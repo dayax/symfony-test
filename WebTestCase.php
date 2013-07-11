@@ -12,37 +12,25 @@
 namespace dayax\symfony\test;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase as BaseTestCase;
-use \PHPUnit_Framework_ExpectationFailedException;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use PHPUnit_Framework_ExpectationFailedException;
+use Symfony\Component\DomCrawler\Form;
 
 abstract class WebTestCase extends BaseTestCase
 {
     /**
      * @var \Symfony\Bundle\FrameworkBundle\Client
      */
-    protected $client;
-
-    /**
-     * @var \Symfony\Component\HttpFoundation\Request
-     */
-    protected $request;
-
-    /**
-     * @var \Symfony\Component\HttpFoundation\Response
-     */
-    protected $response;
-
-    /**
-     * @var \Symfony\Component\DomCrawler\Crawler
-     */
-    protected $crawler;
+    private $client;
     
-    protected $isOpen = false;
+    private $is_open = false;
 
+    
     public function setUp()
     {
-        $this->client = static::createClient();
-        $this->isOpen = false;
+        if(!is_object($this->client)){
+            $this->client = static::createClient();
+        }
+        $this->is_open = false;
     }
 
     /**
@@ -57,21 +45,8 @@ abstract class WebTestCase extends BaseTestCase
      */
     public function open($uri, $method = "GET", array $parameters = array(), array $files = array(), array $server = array(), $content = null, $changeHistory = true)
     {
-        $this->crawler = $this->client->request($method, $uri, $parameters, $files, $server, $content, $changeHistory);
-        $this->request = $this->client->getRequest();
-        $this->response = $this->client->getResponse();
-        $this->isOpen = true;
-        
-        /*$c = $this->crawler->filter('.block-exception');
-        if($c->count()>=1)
-        if($this->response->getStatusCode()>=500){
-            $message = $this->crawler->filter('.text-exception h1')->text();
-            $message = trim($message);
-            $message .= $this->crawler->filter('.block h2')->each(function($node,$i){
-                return $node->text();
-            });
-            throw new \Exception($message);
-        }*/
+        $this->getClient()->request($method, $uri, $parameters, $files, $server, $content, $changeHistory);
+        $this->is_open = true;
     }
     
     /**
@@ -80,7 +55,7 @@ abstract class WebTestCase extends BaseTestCase
      */
     private function getControllerAttributes()
     {
-        $attribute = $this->client->getRequest()->attributes->get('_controller');
+        $attribute = $this->getClient()->getRequest()->attributes->get('_controller');
         $exp = explode("::", $attribute);
         return array($exp[0], $exp[1]);
     }
@@ -93,11 +68,35 @@ abstract class WebTestCase extends BaseTestCase
     {        
         $trace = debug_backtrace();
         $function = $trace[1]['function'];
-        if(false===$this->isOpen){
+        if(false===$this->is_open){
             throw new \LogicException('You have to call open first before run "'.$function.'" method.');
         }
     }
 
+    /**
+     * Return active response
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function getResponse()
+    {
+        return $this->getClient()->getResponse();
+    }
+    
+    /**
+     * Return Client
+     * @return \Symfony\Component\HttpKernel\Client
+     */
+    public function getClient()
+    {
+        return $this->client;
+    }
+    
+    public function getCrawler()
+    {
+        $this->validateWebTypeAssert();
+        return $this->getClient()->getCrawler();
+    }
+    
     /**
      * Assert response status code
      *
@@ -106,7 +105,7 @@ abstract class WebTestCase extends BaseTestCase
     public function assertResponseStatus($code)
     {
         $this->validateWebTypeAssert();
-        $actual = $this->response->getStatusCode();
+        $actual = $this->getResponse()->getStatusCode();
         if($code != $actual){
             throw new \PHPUnit_Framework_ExpectationFailedException(sprintf(
                 'Failed asserting that code "%s", actual status code is "%s"', $code, $actual
@@ -123,7 +122,7 @@ abstract class WebTestCase extends BaseTestCase
     public function assertNotResponseStatus($code)
     {           
         $this->validateWebTypeAssert();
-        $match = $this->response->getStatusCode();
+        $match = $this->getResponse()->getStatusCode();
         if($code == $match){
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
                 'Failed asserting response code was NOT "%s"', $code
@@ -191,7 +190,7 @@ abstract class WebTestCase extends BaseTestCase
      */
     protected function getResponseHeader($header)
     {
-        $headers = $this->response->headers;
+        $headers = $this->getResponse()->headers;
         $responseHeader = $headers->get($header,false);
         return $responseHeader;        
     }
@@ -461,12 +460,11 @@ abstract class WebTestCase extends BaseTestCase
     protected function filter($selector)
     {
         $this->validateWebTypeAssert();
-        $crawler = $this->crawler;
+        $crawler = $this->getClient()->getCrawler();
         $method = 'filter';
         if(substr($selector, 0,1)==='/'){
             $method = 'filterXPath';
-        }
-        
+        }        
         return $crawler->$method($selector);
     }
     
@@ -626,26 +624,37 @@ abstract class WebTestCase extends BaseTestCase
     /**
      * @return \Doctrine\ORM\EntityManager
      */
-    public function getEntityManager()
+    public function getEntityManager($name=null)
     {
+        //if(!class_exists('Doctrine\ORM\EntityManager')){
+        //    throw new \Exception('You have to install and configure doctrine ORM first.');
+        //}
         $c = static::$kernel->getContainer();
         if(!$c->has('doctrine')){
             throw new \LogicException('Can not get Entity Manager, be sure that you have Doctrine\\Bundle\\DoctrineBundle\\DoctrineBundle() registered in AppKernel::registerBundles().');
         }
-        $em = static::$kernel->getContainer()->get('doctrine')->getManager();//@codeCoverageIgnore
-        return $em;//@codeCoverageIgnore
-    }
-    
-    public function logIn($username="admin",$password="admin")
-    {
-        $this->client = static::createClient(array(), array(
-                'PHP_AUTH_USER' => $username,
-                'PHP_AUTH_PW' => $password,
-        ));        
+        $em = static::$kernel->getContainer()->get('doctrine')->getManager($name);
+        return $em;
     }
     
     /**
+     * Simulate http authentication
+     * @param string $username
+     * @param string $password
+     */
+    public function logIn($username="admin",$password="admin")
+    {        
+        $this->getClient()->setServerParameters(array(
+            'PHP_AUTH_USER' => $username,
+            'PHP_AUTH_PW' => $password,
+        ));
+    }
+    
+    /**
+     * Get form by selector.
      * 
+     * Selector can be in format form[name="product_form"]
+     * or by form value (Save, Submit, etc)
      * @return \Symfony\Component\DomCrawler\Form A form Instance
      */
     public function getForm($selector)
@@ -654,17 +663,17 @@ abstract class WebTestCase extends BaseTestCase
         
         $form =null;
         try{
-            $c = $this->crawler->filter($selector);
-            return $this->crawler->selectButton($selector)->form();
+            $c = $this->getCrawler()->filter($selector);
+            return $this->getCrawler()->selectButton($selector)->form();
         }catch(\Exception $e){            
         }
         
-        $c = $this->crawler->filter($selector);
+        $c = $this->getCrawler()->filter($selector);
         if($c->count()>=1){
             return $c->form();
         }
         
-        $c = $this->crawler->filter('form[name="'.$selector.'"]');
+        $c = $this->getCrawler()->filter('form[name="'.$selector.'"]');
         if($c->count()>=1){
             return $c->form();
         }
@@ -672,17 +681,32 @@ abstract class WebTestCase extends BaseTestCase
         return $form;
     }
     
+    /**
+     * 
+     * @param \Symfony\Component\DomCrawler\Form $form
+     * @param string    $method     The Request Method
+     */
     public function submitForm(Form $form,$method="POST")
     {
-        $this->crawler = $this->client->request($method, $form->getUri(),$form->getPhpValues());
+        $this->getClient()->request($method, $form->getUri(),$form->getPhpValues());
     }
     
+    /**
+     * Reset client with the fresh new client
+     */
     public function refreshClient()
-    {
-        $this->client = static::createClient();
-        $this->isOpen = false;        
+    {        
+        $this->client->restart();
+        $this->is_open = false;        
     }
     
+    /**
+     * Remove entity from database
+     * 
+     * @param string    $entityName AcmeDemoBundle:Product
+     * @param string    $col        name
+     * @param string    $key        Acme Demo Product
+     */
     public function removeEntity($entityName,$col,$key)
     {
         $em = $this->getEntityManager();
@@ -699,10 +723,29 @@ abstract class WebTestCase extends BaseTestCase
         }
     }
     
+    /**
+     * Generates a URL or path for a specific route based on the given parameters.
+     *
+     * Parameters that reference placeholders in the route pattern will substitute them in the
+     * path or host. Extra params are added as query string to the URL.
+     *
+     * When the passed reference type cannot be generated for the route because it requires a different
+     * host or scheme than the current one, the method will return a more comprehensive reference
+     * that includes the required params. For example, when you call this method with $referenceType = ABSOLUTE_PATH
+     * but the route requires the https scheme whereas the current scheme is http, it will instead return an
+     * ABSOLUTE_URL with the https scheme and the current host. This makes sure the generated URL matches
+     * the route in any case.
+     *
+     * If there is no route with the given name, the generator must throw the RouteNotFoundException.     
+     * @param   string  $name
+     * @param   array   $parameters
+     * @param   array   $referenceType The type of reference to be generated (one of the constants: UrlGeneratorInterface: ABSOLUTE_URL, ABSOLUTE_PATH, RELATIVE_PATH, NETWORK_PATH)
+     * @return  string  The generated URL
+     */
     public function generateUrl($name,array $parameters=array(),$referenceType=false)
     {
         //$router = new \Symfony\Component\Routing\Generator\UrlGenerator;  
-        $router = $this->client->getKernel()->getContainer()->get('router');
+        $router = $this->getClient()->getKernel()->getContainer()->get('router');
         return $router->generate($name,$parameters,$referenceType);
     }
 }
