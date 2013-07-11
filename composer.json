@@ -10,7 +10,7 @@
     ],
     "license": "MIT",
     "require": {
-        "symfony/symfony": "2.*"
+        "symfony/framework-bundle": "2.*"
     },
     "autoload": {
         "psr-0": {"dayax\\symfony\\test":"" }       
