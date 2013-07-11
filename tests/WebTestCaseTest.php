@@ -62,8 +62,7 @@ class WebTestCaseTest extends WebTestCase
     
     private function getMethod(\ReflectionMethod $method)
     {
-        echo $method->class."\n";
-        
+        //echo $method->class."\n";        
     }
     
     /**
@@ -73,8 +72,7 @@ class WebTestCaseTest extends WebTestCase
     public function testAssertResponseStatus()
     {
         $this->open('/');
-        $this->assertResponseStatus(200);
-        
+        $this->assertResponseStatus(200);        
         $this->assertResponseStatus(500);
     }
     
@@ -443,15 +441,7 @@ class WebTestCaseTest extends WebTestCase
     {
         $this->getEntityManager();
     }
-    
-    /**
-     * @expectedException \Exception
-     */
-    public function testShouldThrowExceptionOnErrorPage()
-    {
-        $this->open('/error_page');
-    }
-    
+           
     public function testShouldGetFormByButton()
     {
         $this->open('/');
@@ -470,9 +460,11 @@ class WebTestCaseTest extends WebTestCase
         $this->assertInstanceOf('Symfony\Component\DomCrawler\Form', $form);
     }
     
+    /**
+     * @expectedException \LogicException
+     */
     public function testCanGetEntityManager()
-    {
-        $this->markTestIncomplete();
+    {                
         $ob = $this->getEntityManager();
         $this->assertInstanceOf('Doctrine\ORM\EntityManager', $ob);
     }
@@ -485,5 +477,15 @@ class WebTestCaseTest extends WebTestCase
     public function testShouldRemoveEntity()
     {
         $this->markTestIncomplete();
+    }
+    
+    public function testCanGenerateUrl()
+    {
+        $url = $this->generateUrl('homepage');
+        
+        $this->assertEquals('/', $url);
+        
+        $url = $this->generateUrl("redirect");
+        $this->assertEquals('/redirect',$url);
     }
 }
