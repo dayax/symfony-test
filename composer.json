@@ -10,7 +10,13 @@
     ],
     "license": "MIT",
     "require": {
-        "symfony/symfony": "2.*"
+        "symfony/framework-bundle": "2.*"
+    },
+    "require-dev": {
+        "symfony/twig-bundle": "2.*",
+        "symfony/form": "2.*",
+        "symfony/browser-kit": "2.*",
+        "symfony/css-selector": "2.*"
     },
     "autoload": {
         "psr-0": {"dayax\\symfony\\test":"" }       
