@@ -10,16 +10,16 @@
     ],
     "license": "MIT",
     "require": {
-        "symfony/framework-bundle": "2.*"
+        "symfony/framework-bundle": "2.3.x"
     },
     "require-dev": {
-        "symfony/twig-bundle": "2.*",
-        "symfony/form": "2.*",
-        "symfony/browser-kit": "2.*",
-        "symfony/css-selector": "2.*"
+        "symfony/twig-bundle": "2.3.x",
+        "symfony/form": "2.3.x",
+        "symfony/browser-kit": "2.3.x",
+        "symfony/css-selector": "2.3.x"
     },
     "autoload": {
-        "psr-0": {"dayax\\symfony\\test":"" }       
+        "psr-0": {"dayax\\symfony\\test":"" }
     },
     "target-dir": "dayax/symfony/test",
     "extra": {
